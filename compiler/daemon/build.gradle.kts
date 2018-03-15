@@ -15,6 +15,12 @@ dependencies {
     compile(commonDep("org.jline", "jline"))
     compileOnly(intellijCoreDep()) { includeJars("intellij-core") }
     compileOnly(intellijDep()) { includeIntellijCoreJarDependencies(project) }
+    runtime(project(":kotlin-reflect"))
+    compileOnly(project(":kotlin-reflect-api"))
+    compile(commonDep("org.jetbrains.kotlinx", "kotlinx-coroutines-jdk8")) { isTransitive = false }
+    compile(commonDep("io.ktor", "ktor-network")) {
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-reflect")
+    }
 }
 
 sourceSets {
