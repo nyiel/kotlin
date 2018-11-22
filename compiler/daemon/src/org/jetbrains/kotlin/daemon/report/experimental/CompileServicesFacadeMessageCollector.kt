@@ -5,7 +5,7 @@
 
 package org.jetbrains.kotlin.daemon.report.experimental
 
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageLocation
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
@@ -29,7 +29,7 @@ internal class CompileServicesFacadeMessageCollector(
     }
 
     override fun report(severity: CompilerMessageSeverity, message: String, location: CompilerMessageLocation?) {
-        async {
+        GlobalScope.async {
             log.info("Message: " + MessageRenderer.WITHOUT_PATHS.render(severity, message, location))
             when (severity) {
                 CompilerMessageSeverity.OUTPUT -> {

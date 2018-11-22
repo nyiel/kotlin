@@ -101,7 +101,7 @@ class CompilerDaemonTest : KotlinIntegrationTestBase() {
         daemonJVMOptions: DaemonJVMOptions,
         daemonOptions: DaemonOptions,
         vararg args: String
-    ): Deferred<CompilerResults> = async {
+    ): Deferred<CompilerResults> = GlobalScope.async {
         val daemon = kotlinCompilerClientInstance.connectToCompileService(
             compilerId,
             clientAliveFile,
@@ -724,7 +724,7 @@ class CompilerDaemonTest : KotlinIntegrationTestBase() {
         localEndSignal: CountDownLatch,
         outStreams: Array<ByteArrayOutputStream>,
         threadNo: Int
-    ) = async(newSingleThreadContext(name = "tread$threadNo")) {
+    ) = GlobalScope.async(newSingleThreadContext(name = "tread$threadNo")) {
         println("thread : ${Thread.currentThread().name}")
         val jar = tmpdir.absolutePath + File.separator + "hello.$threadNo.jar"
         val res = kotlinCompilerClientInstance.compile(
@@ -828,7 +828,7 @@ class CompilerDaemonTest : KotlinIntegrationTestBase() {
 
         val daemonOptions = makeTestDaemonOptions(getTestName(true), 100)
 
-        fun connectThread(threadNo: Int) = async(newSingleThreadContext(name = "daemonConnect$threadNo")) {
+        fun connectThread(threadNo: Int) = GlobalScope.async(newSingleThreadContext(name = "daemonConnect$threadNo")) {
             // (name = "daemonConnect$threadNo")
             try {
                 withFlagFile(getTestName(true), ".alive") { flagFile ->

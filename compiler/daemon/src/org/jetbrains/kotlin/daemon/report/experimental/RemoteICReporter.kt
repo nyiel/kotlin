@@ -5,7 +5,7 @@
 
 package org.jetbrains.kotlin.daemon.report.experimental
 
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
 import org.jetbrains.kotlin.cli.common.ExitCode
 import org.jetbrains.kotlin.daemon.common.CompilationOptions
 import org.jetbrains.kotlin.daemon.common.CompilationResultsAsync
@@ -29,7 +29,7 @@ internal class RemoteICReporterAsync(
         CompilationResultCategory.IC_COMPILE_ITERATION.code in compilationOptions.requestedCompilationResults
 
     override fun report(message: () -> String) {
-        async {
+        GlobalScope.async {
             if (shouldReportMessages && isVerbose) {
                 servicesFacade.report(ReportCategory.IC_MESSAGE, ReportSeverity.DEBUG, message())
             }
@@ -38,7 +38,7 @@ internal class RemoteICReporterAsync(
 
     override fun reportCompileIteration(sourceFiles: Collection<File>, exitCode: ExitCode) {
         if (shouldReportCompileIteration) {
-            async {
+            GlobalScope.async {
                 compilationResults?.add(
                     CompilationResultCategory.IC_COMPILE_ITERATION.code,
                     CompileIterationResult(sourceFiles, exitCode.toString())

@@ -1,9 +1,8 @@
 package org.jetbrains.kotlin.daemon.common.experimental.socketInfrastructure
 
 import io.ktor.network.sockets.Socket
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.channels.*
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import org.jetbrains.kotlin.daemon.common.experimental.LoopbackNetworkInterface
 import sun.net.ConnectionResetException
 import java.beans.Transient
@@ -114,7 +113,7 @@ abstract class DefaultAuthorizableClient<ServerType : ServerBase>(
 
     override suspend fun connectToServer() {
 
-        writeActor = actor(capacity = Channel.UNLIMITED) {
+        writeActor = GlobalScope.actor(capacity = Channel.UNLIMITED) {
             var firstFreeMessageId = 0
             consumeEach { query ->
                 when (query) {
@@ -142,7 +141,7 @@ abstract class DefaultAuthorizableClient<ServerType : ServerBase>(
         class NextObjectQuery
 
         val nextObjectQuery = NextObjectQuery()
-        val objectReaderActor = actor<NextObjectQuery>(capacity = Channel.UNLIMITED) {
+        val objectReaderActor = GlobalScope.actor<NextObjectQuery>(capacity = Channel.UNLIMITED) {
             consumeEach {
                 try {
                     val reply = input.nextObject()
@@ -161,7 +160,7 @@ abstract class DefaultAuthorizableClient<ServerType : ServerBase>(
             }
         }
 
-        readActor = actor(capacity = Channel.UNLIMITED) {
+        readActor = GlobalScope.actor(capacity = Channel.UNLIMITED) {
             val receivedMessages = hashMapOf<Int, MessageReply<*>>()
             val expectedMessages = hashMapOf<Int, ExpectReplyQuery>()
 

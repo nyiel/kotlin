@@ -5,9 +5,7 @@
 
 package org.jetbrains.kotlin.daemon.common.experimental
 
-import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.newSingleThreadContext
+import kotlinx.coroutines.*
 import org.jetbrains.kotlin.cli.common.repl.ReplCheckResult
 import org.jetbrains.kotlin.cli.common.repl.ReplCodeLine
 import org.jetbrains.kotlin.cli.common.repl.ReplCompileResult
@@ -51,7 +49,7 @@ class CompileServiceClientSideImpl(
 
         override suspend fun startKeepAlives() {
             val keepAliveMessage = Server.KeepAliveMessage<CompileServiceServerSide>()
-            async(newSingleThreadContext("keepAliveThread")) {
+            GlobalScope.async(newSingleThreadContext("keepAliveThread")) {
                 delay(KEEPALIVE_PERIOD * 4)
                 while (true) {
                     delay(KEEPALIVE_PERIOD)

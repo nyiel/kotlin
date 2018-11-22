@@ -26,7 +26,7 @@ class TestServer(val serverPort: Int = 6999) {
     private val serverSocket = aSocket(selectorMgr).tcp().bind(InetSocketAddress(serverPort))
     private val log = Logger.getLogger("TestServer")
 
-    fun awaitClient() = async {
+    fun awaitClient() = GlobalScope.async {
         log.info("accepting clientSocket...")
         val client = serverSocket.accept()
         log.info("client accepted! (${client.remoteAddress})")

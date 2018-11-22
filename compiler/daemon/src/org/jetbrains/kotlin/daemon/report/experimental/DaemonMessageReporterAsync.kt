@@ -5,7 +5,7 @@
 
 package org.jetbrains.kotlin.daemon.report.experimental
 
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
 import org.jetbrains.kotlin.daemon.common.CompilationOptions
 import org.jetbrains.kotlin.daemon.common.impls.ReportCategory
 import org.jetbrains.kotlin.daemon.common.impls.ReportSeverity
@@ -38,7 +38,7 @@ private class DaemonMessageReporterAsyncAsyncImpl(
     private val mySeverity: ReportSeverity
 ) : DaemonMessageReporterAsync {
     override fun report(severity: ReportSeverity, message: String) {
-        async {
+        GlobalScope.async {
             if (severity.code <= mySeverity.code) {
                 servicesFacade.report(ReportCategory.DAEMON_MESSAGE.code, severity.code, message, attachment = null)
             }

@@ -49,7 +49,7 @@ interface Server<out T : ServerBase> : ServerBase {
             else -> Server.State.ERROR
         }
 
-    fun attachClient(client: Socket): Deferred<State> = async {
+    fun attachClient(client: Socket): Deferred<State> = GlobalScope.async {
         val (input, output) = client.openIO(log)
         if (!serverHandshake(input, output, log)) {
             log.info_and_print("failed to establish connection with client (handshake failed)")
@@ -116,11 +116,11 @@ interface Server<out T : ServerBase> : ServerBase {
     }
 
     abstract class Message<ServerType : ServerBase> : AnyMessage<ServerType>() {
-        fun process(server: ServerType, output: ByteWriteChannelWrapper) = async {
+        fun process(server: ServerType, output: ByteWriteChannelWrapper) = GlobalScope.async {
             log.info("$server starts processing ${this@Message}")
             processImpl(server, {
                 log.info("$server finished processing ${this@Message}, sending output")
-                async {
+                GlobalScope.async {
                     log.info("$server starts sending ${this@Message} to output")
                     output.writeObject(DefaultAuthorizableClient.MessageReply(messageId ?: -1, it))
                     log.info("$server finished sending ${this@Message} to output")
@@ -146,13 +146,13 @@ interface Server<out T : ServerBase> : ServerBase {
     fun runServer(): Deferred<Unit> {
         log.info_and_print("binding to address(${serverSocketWithPort.port})")
         val serverSocket = serverSocketWithPort.socket
-        return async {
+        return GlobalScope.async {
             serverSocket.use {
                 log.info_and_print("accepting clientSocket...")
                 while (true) {
                     val client = serverSocket.accept()
                     log.info_and_print("client accepted! (${client.remoteAddress})")
-                    async {
+                    GlobalScope.async {
                         val state = attachClient(client).await()
                         log.info_and_print("finished ($client) with state : $state")
                         when (state) {
@@ -201,8 +201,8 @@ fun <T> runBlockingWithTimeout(timeout: Long = AUTH_TIMEOUT_IN_MILLISECONDS, blo
 suspend fun <T> runWithTimeout(
     timeout: Long = AUTH_TIMEOUT_IN_MILLISECONDS,
     unit: TimeUnit = TimeUnit.MILLISECONDS,
-    block: suspend () -> T
-): T? = withTimeoutOrNull(timeout, unit) { block() }
+    block: suspend CoroutineScope.() -> T
+): T? = withTimeoutOrNull(unit.toMillis(timeout)) { block() }
 
 //@Throws(ConnectionResetException::class)
 suspend fun tryAcquireHandshakeMessage(input: ByteReadChannelWrapper, log: Logger): Boolean {

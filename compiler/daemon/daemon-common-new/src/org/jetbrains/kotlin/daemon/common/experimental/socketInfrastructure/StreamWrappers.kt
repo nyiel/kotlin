@@ -3,9 +3,7 @@ package org.jetbrains.kotlin.daemon.common.experimental.socketInfrastructure
 import io.ktor.network.sockets.Socket
 import io.ktor.network.sockets.openReadChannel
 import io.ktor.network.sockets.openWriteChannel
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.channels.consumeEach
@@ -46,7 +44,7 @@ class ByteReadChannelWrapper(readChannel: ByteReadChannel, private val log: Logg
             null
         }
 
-    private val readActor = actor<ReadQuery>(capacity = Channel.UNLIMITED) {
+    private val readActor = GlobalScope.actor<ReadQuery>(capacity = Channel.UNLIMITED) {
         consumeEach { message ->
             if (!readChannel.isClosedForRead) {
                 readLength(readChannel)?.let { messageLength ->
@@ -154,7 +152,7 @@ class ByteWriteChannelWrapper(writeChannel: ByteWriteChannel, private val log: L
         }
     }
 
-    private val writeActor = actor<WriteActorQuery>(capacity = Channel.UNLIMITED) {
+    private val writeActor = GlobalScope.actor<WriteActorQuery>(capacity = Channel.UNLIMITED) {
         consumeEach { message ->
             if (!writeChannel.isClosedForWrite) {
                 when (message) {

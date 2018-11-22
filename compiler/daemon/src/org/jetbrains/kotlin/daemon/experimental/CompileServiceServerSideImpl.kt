@@ -138,7 +138,7 @@ class CompileServiceServerSideImpl(
 
     var isWriteLocked = false
     var readLocksCount = 0
-    val queriesActor = actor<CompileServiceTask>(capacity = Channel.UNLIMITED) {
+    val queriesActor = GlobalScope.actor<CompileServiceTask>(capacity = Channel.UNLIMITED) {
         var currentTaskId = 0
         var shutdownTask: ExclusiveTask? = null
         val activeTaskIds = arrayListOf<Int>()
@@ -148,7 +148,7 @@ class CompileServiceServerSideImpl(
             if (activeTaskIds.isEmpty()) {
                 shutdownTask?.let { task ->
                     isWriteLocked = true
-                    async {
+                    GlobalScope.async {
                         val res = task.shutdownAction()
                         task.completed.complete(true)
                         if (task is ShutdownTaskWithResult) {
@@ -174,7 +174,7 @@ class CompileServiceServerSideImpl(
                         val id = currentTaskId++
                         activeTaskIds.add(id)
                         readLocksCount++
-                        async {
+                        GlobalScope.async {
                             val res = task.action()
                             if (task is OrdinaryTaskWithResult) {
                                 task.result.complete(res)
@@ -808,7 +808,7 @@ class CompileServiceServerSideImpl(
 
         val anyDead = state.sessions.cleanDead() || state.cleanDeadClients()
 
-        async {
+        GlobalScope.async {
             ifAliveUnit(minAliveness = Aliveness.LastSession, info = "periodicAndAfterSessionCheck - 1") {
                 when {
                     // check if in graceful shutdown state and all sessions are closed
@@ -851,7 +851,7 @@ class CompileServiceServerSideImpl(
     }
 
     private fun periodicSeldomCheck() {
-        async {
+        GlobalScope.async {
             ifAliveUnit(minAliveness = Aliveness.Alive, info = "periodicSeldomCheck") {
                 // compiler changed (seldom check) - shutdown
                 if (classpathWatcher.isChanged) {
@@ -865,7 +865,7 @@ class CompileServiceServerSideImpl(
 
     // TODO: handover should include mechanism for client to switch to a new daemon then previous "handed over responsibilities" and shot down
     private fun initiateElections() {
-        runBlocking(Unconfined) {
+        runBlocking(Dispatchers.Unconfined) {
             ifAliveUnit(info = "initiateElections") {
                 log.info("initiate elections")
                 val aliveWithOpts = walkDaemonsAsync(
@@ -975,7 +975,7 @@ class CompileServiceServerSideImpl(
             currentSessionId == state.sessions.lastSessionId
         ) {
             log.info("currentCompilationsCount == compilationsCounter.get()")
-            runBlocking(Unconfined) {
+            runBlocking(Dispatchers.Unconfined) {
                 ifAliveExclusiveUnit(minAliveness = Aliveness.LastSession, info = "initiate elections - shutdown") {
                     log.info("Execute delayed shutdown!!!")
                     log.fine("Execute delayed shutdown")
@@ -1018,7 +1018,7 @@ class CompileServiceServerSideImpl(
     }
 
     private fun gracefulShutdownImpl() {
-        runBlocking(Unconfined) {
+        runBlocking(Dispatchers.Unconfined) {
             ifAliveExclusiveUnit(minAliveness = Aliveness.LastSession, info = "gracefulShutdown") {
                 shutdownIfIdle()
             }
@@ -1041,7 +1041,7 @@ class CompileServiceServerSideImpl(
         daemonMessageReporterAsync: DaemonMessageReporterAsync,
         tracer: RemoteOperationsTracer?,
         body: suspend (EventManager, Profiler) -> ExitCode
-    ): Deferred<CompileService.CallResult<Int>> = async {
+    ): Deferred<CompileService.CallResult<Int>> = GlobalScope.async {
         log.info("alive!")
         withValidClientOrSessionProxy(sessionId) {
             log.info("before compile")
@@ -1068,7 +1068,7 @@ class CompileServiceServerSideImpl(
         facade: CompilerCallbackServicesFacadeClientSide,
         eventManager: EventManager,
         rpcProfiler: Profiler
-    ): Deferred<Services> = async {
+    ): Deferred<Services> = GlobalScope.async {
         val builder = Services.Builder()
         if (facade.hasIncrementalCaches()) {
             builder.register(
@@ -1093,7 +1093,7 @@ class CompileServiceServerSideImpl(
         daemonMessageReporterAsync: DaemonMessageReporterAsync,
         rpcProfiler: Profiler,
         body: suspend () -> R
-    ): Deferred<R> = async {
+    ): Deferred<R> = GlobalScope.async {
         try {
             log.info("checkedCompile")
             val profiler = if (daemonOptions.reportPerf) WallAndThreadAndMemoryTotalProfiler(withGC = false) else DummyProfiler()
