@@ -18,6 +18,7 @@ buildscript {
     repositories.withRedirector(project) {
         bootstrapKotlinRepo?.let(::maven)
         maven("https://plugins.gradle.org/m2")
+        maven("http://dl.bintray.com/kotlin/ktor")
     }
 
     // a workaround for kotlin compiler classpath in kotlin project: sometimes gradle substitutes
@@ -319,7 +320,7 @@ allprojects {
 
     val mirrorRepo: String? = findProperty("maven.repository.mirror")?.toString()
 
-    repositories {
+    repositories.withRedirector(project) {
         intellijSdkRepo(project)
         androidDxJarRepo(project)
         mirrorRepo?.let(::maven)
