@@ -185,7 +185,7 @@ private fun Module.shouldUseProjectLanguageVersionSettings(): Boolean {
 }
 
 private fun Module.computeLanguageVersionSettings(): LanguageVersionSettings {
-    if (shouldUseProjectLanguageVersionSettings()) return project.getLanguageVersionSettings()
+    if (shouldUseProjectLanguageVersionSettings()) return project.getLanguageVersionSettings(this)
 
     val facetSettings = KotlinFacetSettingsProvider.getInstance(project).getInitializedSettings(this)
     val languageVersion = facetSettings.languageLevel ?: getAndCacheLanguageLevelByDependencies()
