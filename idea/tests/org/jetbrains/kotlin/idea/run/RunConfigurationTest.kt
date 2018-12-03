@@ -278,7 +278,7 @@ class RunConfigurationTest: KotlinCodeInsightTestCase() {
 
     private fun moduleDirPath(moduleName: String) = "${testDataPath}${getTestName(false)}/$moduleName"
 
-    override fun getTestDataPath() = getTestDataPathBase() + "/run/"
+    override fun getTestDataPath() = getTestDataPathBase() + "/run/main/"
     override fun getTestProjectJdk() = mockJdk()
 
     private class CreateModuleResult(
