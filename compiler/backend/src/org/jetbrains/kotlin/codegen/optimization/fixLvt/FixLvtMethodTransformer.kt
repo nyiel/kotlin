@@ -26,9 +26,27 @@ class FixLvtMethodTransformer : MethodTransformer() {
     ) {
         for (insn in methodNode.instructions.asSequence()) {
             if (insn is IincInsnNode) {
-                insn.`var` = findLocalOfInsn(methodNode, clashingLocals[insn.`var`], insn)?.let { newSlots[it] } ?: continue
+                val local = findLocalOfInsn(methodNode, clashingLocals[insn.`var`], insn) ?: continue
+                if (local.desc != "I" && local.desc != "Z") continue
+                insn.`var` = newSlots[local] ?: continue
             } else if (insn is VarInsnNode) {
-                insn.`var` = findLocalOfInsn(methodNode, clashingLocals[insn.`var`], insn)?.let { newSlots[it] } ?: continue
+                val local = findLocalOfInsn(methodNode, clashingLocals[insn.`var`], insn) ?: continue
+                // Do not mess with stack spilling
+                val isCompatible = when (insn.opcode) {
+                    Opcodes.ILOAD,
+                    Opcodes.ISTORE -> local.desc == "I" || local.desc == "Z" || local.desc == "S" || local.desc == "C"
+                    Opcodes.LLOAD,
+                    Opcodes.LSTORE -> local.desc == "J"
+                    Opcodes.FLOAD,
+                    Opcodes.FSTORE -> local.desc == "F"
+                    Opcodes.DLOAD,
+                    Opcodes.DSTORE -> local.desc == "D"
+                    Opcodes.ALOAD,
+                    Opcodes.ASTORE -> local.desc[0] == 'L' || local.desc[0] == '['
+                    else -> false
+                }
+                if (!isCompatible) continue
+                insn.`var` = newSlots[local] ?: continue
             }
         }
 
