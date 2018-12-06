@@ -49,6 +49,7 @@ class ForEachParameterNotUsedInspection : AbstractKotlinInspection() {
                             calleeExpression,
                             "Loop parameter '${iterableParameter.getThisLabelName()}' is unused",
                             ProblemHighlightType.GENERIC_ERROR_OR_WARNING,
+                            ReplaceWithRepeatFix(),
                             IntroduceAnonymousParameterFix()
                         )
                     }
@@ -68,6 +69,14 @@ class ForEachParameterNotUsedInspection : AbstractKotlinInspection() {
             with(SpecifyExplicitLambdaSignatureIntention) {
                 literal.setParameterListIfAny(psiFactory, newParameterList)
             }
+        }
+    }
+
+    private class ReplaceWithRepeatFix : LocalQuickFix {
+        override fun getFamilyName() = "Replace with 'repeat(size)'"
+
+        override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
+            val callExpression = descriptor.psiElement.parent as? KtCallExpression ?: return
         }
     }
 
