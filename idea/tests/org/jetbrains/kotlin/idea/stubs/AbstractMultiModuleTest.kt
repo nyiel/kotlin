@@ -47,19 +47,29 @@ abstract class AbstractMultiModuleTest : DaemonAnalyzerTestCase() {
     }
 
     fun module(name: String, jdk: TestJdkKind = TestJdkKind.MOCK_JDK, hasTestRoot: Boolean = false): Module {
-        val srcDir = testDataPath + "${getTestName(true)}/$name"
-        val moduleWithSrcRootSet = createModuleFromTestData(srcDir, name, StdModuleTypes.JAVA, true)!!
-        if (hasTestRoot) {
-            addRoot(
-                moduleWithSrcRootSet,
-                File(testDataPath + "${getTestName(true)}/${name}Test"),
-                true
-            )
+        val modulePath = testDataPath + "${getTestName(true)}/$name"
+        val testPath = (testDataPath + "${getTestName(true)}/${name}Test").takeIf { hasTestRoot }
+        return module(name, jdk, modulePath, srcRootPath = modulePath, testRootPath = testPath)
+    }
+
+    fun module(
+        name: String,
+        jdk: TestJdkKind = TestJdkKind.MOCK_JDK,
+        moduleRootPath: String,
+        srcRootPath: String? = null,
+        testRootPath: String? = null
+    ): Module {
+        val module = createModuleFromTestData(moduleRootPath, name, StdModuleTypes.JAVA, true)!!
+        if (srcRootPath != null) {
+            addRoot(module, File(srcRootPath), isTestRoot = false)
+        }
+        if (testRootPath != null) {
+            addRoot(module, File(testRootPath), isTestRoot = true)
         }
 
-        ConfigLibraryUtil.configureSdk(moduleWithSrcRootSet, PluginTestCaseBase.addJdk(testRootDisposable) { PluginTestCaseBase.jdk(jdk) })
+        ConfigLibraryUtil.configureSdk(module, PluginTestCaseBase.addJdk(testRootDisposable) { PluginTestCaseBase.jdk(jdk) })
 
-        return moduleWithSrcRootSet
+        return module
     }
 
     public override fun createModule(path: String, moduleType: ModuleType<*>): Module {
