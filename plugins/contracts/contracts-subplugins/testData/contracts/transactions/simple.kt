@@ -61,8 +61,14 @@ fun test_4() {
 }
 
 fun test_5() {
+    <!CONTEXTUAL_EFFECT_WARNING(Transaction transaction must be closed)!>val transaction<!> = Transaction()
+    transaction.start()
+}
+
+fun test_6() {
     val transaction = Transaction()
 
     transaction.start()
     transaction.<!CONTEXTUAL_EFFECT_WARNING(Transaction transaction already started)!>start()<!>
+    transaction.commit()
 }

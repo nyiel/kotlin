@@ -5,6 +5,7 @@ public fun test_2(): kotlin.Unit
 public fun test_3(): kotlin.Unit
 public fun test_4(): kotlin.Unit
 public fun test_5(): kotlin.Unit
+public fun test_6(): kotlin.Unit
 
 public final class Transaction {
     public constructor Transaction()
