@@ -3990,6 +3990,11 @@ public class ExtractionTestGenerated extends AbstractExtractionTest {
             runTest("idea/testData/refactoring/extractSuperclass/enum.kt");
         }
 
+        @TestMetadata("expectClass.kt")
+        public void testExpectClass() throws Exception {
+            runTest("idea/testData/refactoring/extractSuperclass/expectClass.kt");
+        }
+
         @TestMetadata("extractToExistingFile.kt")
         public void testExtractToExistingFile() throws Exception {
             runTest("idea/testData/refactoring/extractSuperclass/extractToExistingFile.kt");
@@ -4086,6 +4091,11 @@ public class ExtractionTestGenerated extends AbstractExtractionTest {
         @TestMetadata("dropFinal.kt")
         public void testDropFinal() throws Exception {
             runTest("idea/testData/refactoring/extractInterface/dropFinal.kt");
+        }
+
+        @TestMetadata("expectClass.kt")
+        public void testExpectClass() throws Exception {
+            runTest("idea/testData/refactoring/extractInterface/expectClass.kt");
         }
 
         @TestMetadata("extractToExistingFile.kt")

@@ -1,0 +1,8 @@
+open class Abstract
+
+// NAME: Abstract
+// SIBLING:
+expect class Some : Abstract() {
+    // INFO: {checked: "true"}
+    val x: Int
+}
