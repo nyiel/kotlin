@@ -1,8 +1,0 @@
-interface I
-
-// NAME: I
-// SIBLING:
-expect class Some : I {
-    // INFO: {checked: "true"}
-    val x: Int
-}
