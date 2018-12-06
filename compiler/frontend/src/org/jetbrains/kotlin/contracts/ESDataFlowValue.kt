@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.contracts
 
 import org.jetbrains.kotlin.contracts.model.ESExpressionVisitor
+import org.jetbrains.kotlin.contracts.model.ESReceiver
 import org.jetbrains.kotlin.contracts.model.ESValue
 import org.jetbrains.kotlin.contracts.model.structure.ESVariable
 import org.jetbrains.kotlin.descriptors.ValueDescriptor
@@ -56,3 +57,5 @@ class ESLambda(val lambda: KtLambdaExpression, bindingContext: BindingContext) :
         throw IllegalStateException("Lambdas shouldn't be visited by ESExpressionVisitor")
     }
 }
+
+class ESDataFlowReceiver(receiverValue: ReceiverValue, val dataFlowValue: DataFlowValue) : ESReceiver(receiverValue)
